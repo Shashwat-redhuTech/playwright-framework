@@ -1,3 +1,4 @@
+
 class LoginPage {
     constructor(page) {
         this.page = page;
@@ -5,7 +6,7 @@ class LoginPage {
         this.password = page.locator("#userPassword");
         this.loginbtn = page.locator("#login");
         // Base URL ko constructor mein store karna accha rehta hai
-        this.baseURL = "https://rahulshettyacademy.com/client/";
+        this.baseURL = process.env.BASE_URL;
     }
 
     async goto() {
