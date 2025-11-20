@@ -40,7 +40,7 @@ Copy code
 ├─ playwright.config.js
 ├─ .gitignore
 └─ README.md               
-
+|_ .env 
 
 Install dependencies
 bash
