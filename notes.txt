@@ -1,0 +1,420 @@
+⭐ Playwright Capabilities — Detailed Explanation
+1️⃣ Cross-Browser Testing (Chromium, WebKit, Firefox)
+
+Playwright supports three major browser engines:
+Chromium
+Google Chrome
+Microsoft Edge
+WebKit
+Safari (Mac, iPhone, iPad)
+Firefox
+Mozilla Firefox
+
+Why this matters?
+
+Most users view apps on different browsers.
+A feature working on Chrome might break on Safari.
+Playwright allows you to run the same test on multiple browsers:
+test.use({ browserName: 'webkit' });
+Or run on all browsers:
+npx playwright test --browser=all
+
+
+Result: You ensure your web application behaves consistently across all platforms.
+Auto-Waiting (One of Playwright’s Superpowers)
+Playwright automatically waits for:
+Elements to appear
+Elements to become clickable
+Navigation to finish
+Animations to complete
+Network to be idle
+This eliminates 90% of flakiness that Selenium tests suffer from.
+
+Example:
+await page.click("#loginBtn");
+You don’t need:
+await page.waitForSelector("#loginBtn");
+Playwright does it automatically.
+
+✔ Auto-waiting ensures:
+
+No race conditions
+
+No need for explicit waits
+
+Stable tests even on slow networks
+
+This is why Playwright is extremely reliable compared to Selenium.
+
+3️⃣ Assertions (Validating the UI)
+
+Assertions are checks you make to ensure the app behaves as expected.
+
+Playwright has built-in assertions via @playwright/test:
+
+Example:
+await expect(page.locator('.success')).toHaveText('Order Confirmed');
+
+Types of assertions:
+
+✔ Text validation
+✔ Visibility
+✔ Form values
+✔ URL checks
+✔ Screenshot matching
+✔ Attribute validations
+
+Assertions help ensure:
+
+🟢 UI is correct
+🟢 Elements appear/disappear correctly
+🟢 Errors show when expected
+🟢 Form entries succeed
+
+Without assertions, automation has no “pass/fail” logic.
+
+4️⃣ API Testing (Without Opening the Browser)
+
+Playwright can test your backend APIs directly.
+
+Example:
+const response = await request.post('/login', { data: payload });
+expect(response.ok()).toBeTruthy();
+
+Why this matters?
+
+Automation testers often need to:
+
+Create test data
+
+Authenticate users
+
+Seed databases
+
+Trigger business workflows
+
+You can perform all this using the API context without a browser.
+
+Powerful combination:
+
+Use API to log in →
+Inject token into browser →
+Skip UI login page
+
+This is used in your uploaded framework.
+
+Result:
+
+Much faster tests
+More stable (UI login can break easily)
+______________________________________________________________________________________________________
+5️⃣ Page Object Model (POM)
+
+POM is a design pattern that organizes code into separate page files:
+
+✔ LoginPage
+✔ Dashboard
+✔ Orders
+✔ CartPage
+✔ PlaceOrder
+
+Each file contains:
+
+Locators
+
+Page-specific actions
+
+Example (Your LoginPage.js):
+async validLogin(email, password) {
+  await this.userName.fill(email);
+  await this.password.fill(password);
+  await this.loginbtn.click();
+}
+
+Why POM?
+
+Reusable code
+
+Cleaner tests
+
+Easier maintenance
+
+Reduces duplication
+
+Large projects scale easily
+
+Your project even uses a POManager
+
+This is advanced POM design, which improves:
+
+Test readability
+
+Page object access
+
+Reduced imports
+
+POM is essential for real automation projects.
+
+6️⃣ Headless / Headed Modes
+✔ Headless mode (default)
+
+Runs browser without UI, faster:
+
+npx playwright test
+
+✔ Headed mode
+
+Shows actual browser window:
+
+npx playwright test --headed
+
+When to use which?
+Mode	When to Use
+Headless	CI pipelines, fast execution
+Headed	Debugging, visually observing tests
+You can also slow down for debugging:
+browser.newContext({ slowMo: 500 });
+______________________________________________________________________________________________________
+3. LoginPage.js – Handling UI Login & API Login
+
+LoginPage
+
+⭐ Key Concepts Taught:
+➤ Locators in Constructor
+this.userName = page.locator("#userEmail");
+this.password = page.locator("#userPassword");
+this.loginbtn = page.locator("#login");
+
+➤ goto() Method
+
+Opens the base URL stored in .env.
+
+➤ validLogin() UI Login
+
+Fills input fields
+
+Clicks login
+
+Waits for network idle (best practice)
+
+➤ apiLogin() – Bypassing UI Login
+
+This is important for real-world frameworks.
+
+It injects token directly:
+
+await this.page.addInitScript(tokenValue => {
+    window.localStorage.setItem('token', tokenValue);
+}, token);
+
+
+Why this is powerful?
+
+✔ Faster tests
+✔ No dependency on UI
+✔ Used for E2E authentication-heavy apps
+
+🔷 4. POManager.js – Factory for Pages
+
+POManager
+
+This file manages all page objects.
+
+⭐ What it teaches:
+
+Centralized place to create and return page objects
+
+Prevents multiple new object creations inside test files
+
+Example:
+const poManager = new POManager(page);
+const loginPage = poManager.getLoginPage();
+
+
+This is the recommended pattern for scalable frameworks.
+
+🔷 5. DashBoard.js – Adding Items to Cart
+
+DashBoard
+
+⭐ Concepts Covered:
+➤ Locating product cards
+this.products = page.locator(".card-body");
+
+➤ Looping Through List of Items:
+for (let i = 0; i < count; ++i) {
+   const productName = await currentProduct.locator("b").textContent();
+}
+
+➤ Clicking “Add to Cart”
+await currentProduct.locator("button:last-of-type").click();
+
+➤ goToCart()
+
+Clicks the cart icon.
+
+This file is excellent POM practice.
+
+🔷 6. Orders.js
+
+Orders
+
+Currently empty — typically used for:
+
+Viewing orders
+
+Verifying transactions
+
+Downloading invoice
+
+Good expansion opportunity.
+
+🔷 7. Calender.spec.js – Setting Date Using JS
+
+Calender.spec
+
+⭐ Teaches:
+➤ How to force-set a date in input fields
+
+Using page.evaluate() to interact with DOM directly:
+
+el.value = value;
+el.dispatchEvent(new Event('input', { bubbles: true }));
+
+
+Useful for complex cases where date picker UI is flaky.
+
+🔷 8. ClientApp.spec.js – Real E2E Flow
+
+ClientApp.spec
+
+⭐ Concepts shown:
+
+✔ API login using request context
+✔ Looping through products
+✔ Adding items to cart
+✔ Auto-suggest dropdown handling
+✔ Country selection
+✔ Validating order success
+
+Important patterns:
+➤ Using test.beforeAll
+test.beforeAll(async ({ request }) => {
+   const apiContext = await request.newContext();
+});
+
+➤ Adding product dynamically:
+if (wishList.includes(productName)) { ... }
+
+➤ Selecting country with typeahead:
+await selectCountry.pressSequentially("ind");
+await page.getByText("India", { exact: true }).click();
+
+🔷 9. example.spec.js – Popup Handling
+
+example.spec
+
+⭐ Shows:
+
+How to handle JavaScript dialogs
+
+page.on('dialog', dialog => dialog.accept());
+
+
+Essential skill for handling alert(), confirm(), etc.
+
+🔷 10. Locators.spec.js – Special Locators
+
+Locators.spec
+
+Teaches how to use:
+
+✔ getByLabel
+
+✔ getByRole
+✔ getByPlaceholder
+✔ getByText
+✔ filter()
+
+These are more reliable than normal XPath/CSS.
+
+🔷 11. TC_001.spec.js – Using POM End-to-End
+
+TC_001.spec
+
+You use POManager here:
+
+const poManager = new POManager(page);
+
+
+Flow:
+
+API login
+
+Add items to cart
+
+Verify cart
+
+Checkout
+
+Enter details
+
+Place order
+
+This file demonstrates:
+
+Cleanest POM usage
+
+TestData-driven testing
+
+Token-based authentication
+
+🔷 12. UiBasicTest.spec.js – Form Validations
+
+UiBasicTest.spec
+
+This teaches:
+
+✔ Assertions
+
+✔ Dropdown handling
+✔ Checkbox validation
+✔ Page navigation
+
+Example:
+
+await expect(errormessage).toContainText("Incorrect");
+
+await dropDown.selectOption("consult");
+
+
+These are fundamental UI automation concepts.
+
+🔷 13. Key Playwright Concepts Demonstrated in Your Project
+✔ Auto-waiting
+
+Playwright waits for elements automatically.
+
+✔ Page.evaluate()
+
+Used for direct DOM manipulation.
+
+✔ Event listeners
+
+E.g., popup handling (page.on('dialog', ...)).
+
+✔ Role-based locators
+
+Modern and more stable.
+
+✔ API Testing + UI testing
+
+(by using request.newContext).
+
+✔ Page Object Model
+
+Scalable structure.
+
+✔ LocalStorage token login
+
+Fast & reliable login strategy.
